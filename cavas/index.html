@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta content="" name="Keywords">
+    <meta content="" name="description">
+    <title>Title</title>
+    <link rel="icon" href="">
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+        }
+        canvas{
+            border: 1px solid #333333;
+            box-shadow: 3px 3px 5px 3px #ccc;
+        }
+    </style>
+
+</head>
+<body>
+<canvas id="canvas" width="800" height="500">
+    您的浏览器版本过低
+</canvas>
+</body>
+</html>
+<script>
+   // 获取canvas
+    let canvas=document.getElementById('canvas');
+    let ctx=canvas.getContext('2d');
+
+    ctx.beginPath(); // 创建一个初始路径
+    // ctx.arc(x,y,r,beginR,endR,bol)
+   // 这里的坐标都是相对于画布的左上角来说的
+    // x代表这个圆的圆心的x轴坐标
+    // y代表这个圆的圆心的y轴坐标
+    // R代表这个圆的半径
+    // beginR 代表 这个圆开始的角度
+    // endR   代表 这个圆的最终角度
+    // bol true 代表是顺时针 默认是顺时针 这个参数是可以不写的
+    ctx.arc(200,200,50,0,2*Math.PI);// 定义了圆的路径
+   //ctx.strokeStyle='red'; // 设置线的颜色
+   //ctx.lineWidth=10;// 设置线的宽度
+    //ctx.stroke();// 是把定义好的路径画到画布上（画线）
+   ctx.fillStyle='red'; // 把填充的颜色设置成红色
+   ctx.fill(); // 把定义好的路径填充上颜色
+   let ary=[];// 用来存储每次新产生的小球
+   function Circle(x,y,r) {
+       this.x=x;//这是控制新产生小球的x轴坐标
+       this.y=y;//控制新产生小球的y轴坐标
+       this.r=r;//控制新产生小球的半径
+       this.dx=Math.random()*10-5; // 控制当前这个小球的移动方向
+       this.dy=Math.random()*10-5;
+       // 小球的随机颜色
+       this.color=`rgb(${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)},${Math.floor(Math.random()*255)})`
+       ary.push(this); // 把定义好的小球数据放到这个数组中
+
+   }
+  // render函数 是把现有的数据渲染到画布上
+   Circle.prototype.render=function () {
+       ctx.beginPath();
+       ctx.arc(this.x,this.y,this.r,0,2*Math.PI);
+       ctx.fillStyle=this.color;
+       ctx.fill();
+   }
+   // 现在还需要一个让小球逐渐变小，而且让位置不断变化的一个函数
+    Circle.prototype.update=function () {
+        // 位置的变化控制x,y就可以
+        this.x+=this.dx;
+        this.y+=this.dy;
+        this.r--;// 让小球的半径慢慢减小
+        // 这时我们需要注意 当小球的半径减少到0时需要把这个小球从数组中移除
+        if(this.r<=0){
+            ary.filter((item)=>{
+                return item != this; // 目的是为了把这个小球移除
+            })
+            return false // false 代表小球不需要渲染
+        }
+        return true
+    }
+
+    // 接下来 我们需要给canvas绑定鼠标滑过的事件
+    canvas.onmousemove=function (e) {
+        let cir=new Circle(e.clientX,e.clientY,40)
+       // cir.render();
+       // cir.update();
+    }
+   // 需要我们用定时器去让小球不断的变化
+//  setInterval(()=>{
+//        ctx.clearRect(0,0,800,600);//清空画布
+//        ary.forEach((item)=>{
+//            item.update() && item.render();
+//
+//        })
+//    },30)
+   let timer=null;
+   canvas.onmouseenter=function () {
+       clearInterval(timer)
+       draw()
+   };
+   canvas.onmouseleave=function () {
+       ary.length==0? clearInterval(timer):null;
+   }
+   canvas.ontouchstart=function () {
+       clearInterval(timer)
+       draw()
+   }
+
+canvas.ontouchmove=function (e) {
+    e.preventDefault();
+    let cir=new Circle(e.touches[0].clientX,e.touches[0].clientY,40)
+}
+    function draw() {
+        timer=setInterval(()=>{
+            ctx.clearRect(0,0,800,600);//清空画布
+            ary.forEach((item)=>{
+                item.update() && item.render();
+
+            })
+        },30)
+    }
+
+
+</script>
+
+
